@@ -6,6 +6,9 @@ using System.Xml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Spire.Doc;
+using Syncfusion.DocIO;
+using Syncfusion.DocIO.DLS;
+
 
 
 
@@ -52,7 +55,7 @@ namespace VaDAlpha
 
                     // Получаем видеофайлы в текущей папке  
                     var files = Directory.GetFiles(folder, "*.*")
-                                         .Where(f => f.EndsWith(".mp4") || f.EndsWith(".avi") || f.EndsWith(".mkv"));
+                                         .Where(f => f.EndsWith(".mp4") || f.EndsWith(".avi") || f.EndsWith(".mkv") || f.EndsWith(".mpg") || f.EndsWith(".mov") || f.EndsWith(".mxf"));
 
                     // Добавляем файлы как дочерние узлы  
                     foreach (var file in files)
@@ -107,7 +110,8 @@ namespace VaDAlpha
                 // Проверяем наличие текстовых файлов в корневой директории  
                 var rootFiles = Directory.GetFiles(selectedPath, "*.*")
                                          .Where(f => f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase) ||
-                                                     f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)).ToList();
+                                                     f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase) ||
+                                                     f.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)).ToList();
 
                 // Добавляем файлы, если они найдены  
                 foreach (var file in rootFiles)
@@ -128,7 +132,8 @@ namespace VaDAlpha
                     // Получаем файлы только в текущей папке  
                     var files = Directory.GetFiles(folder, "*.*")
                                          .Where(f => f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase) ||
-                                                     f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)).ToList();
+                                                     f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase) ||
+                                                     f.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)).ToList();
 
                     // Отладочный вывод  
                     Console.WriteLine($"Найдено {files.Count} текстовых файлов в папке {folder}:");
@@ -148,7 +153,8 @@ namespace VaDAlpha
                         // Получаем файлы в подкаталогах  
                         var subFiles = Directory.GetFiles(subFolder, "*.*")
                                                 .Where(f => f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase) ||
-                                                            f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)).ToList();
+                                                            f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase) ||
+                                                            f.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)).ToList();
 
                         // Отладочный вывод для подкаталогов  
                         Console.WriteLine($"Найдено {subFiles.Count} текстовых файлов в подкаталоге {subFolder}:");
@@ -192,6 +198,34 @@ namespace VaDAlpha
                 return document.GetText();
             }
         }
+        private string ReadRtfFile(string filepath)
+        {
+            // Создаем новый документ  
+            WordDocument document = new WordDocument();
+
+            try
+            {
+                // Загружаем RTF файл в документ  
+                // Параметр FileFormat.RTF указывает формат входного файла  
+                document.Open(filepath, FormatType.Rtf);
+
+                // Получаем текст из документа  
+                // Возвращает весь текст документа как строку  
+                return document.GetText();
+            }
+            catch (Exception ex)
+            {
+                // Обработка исключений  
+                MessageBox.Show($"Ошибка при чтении RTF файла: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return string.Empty;
+            }
+            finally
+            {
+                // Освобождаем все ресурсы, используемые документом  
+                document.Close();
+            }
+
+        }
         private void treeViewTxt_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (e.Node.Tag is string filePath && File.Exists(filePath))
@@ -211,8 +245,12 @@ namespace VaDAlpha
                         // Читаем текст из .doc файла через Free Spire.Doc  
                         textContent = ReadDocFile(filePath);
                     }
+                    else if (filePath.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        textContent = ReadRtfFile(filePath);
+                    }
 
-                    richTextBox1.Text = textContent;
+                        richTextBox1.Text = textContent;
                 }
                 catch (Exception ex)
                 {
