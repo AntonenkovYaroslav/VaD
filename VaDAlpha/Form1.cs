@@ -55,7 +55,7 @@ namespace VaDAlpha
 
                     // Получаем видеофайлы в текущей папке  
                     var files = Directory.GetFiles(folder, "*.*")
-                                         .Where(f => f.EndsWith(".mp4") || f.EndsWith(".avi") || f.EndsWith(".mkv") || f.EndsWith(".mpg") || f.EndsWith(".mov") || f.EndsWith(".mxf"));
+                                         ;
 
                     // Добавляем файлы как дочерние узлы  
                     foreach (var file in files)
@@ -82,6 +82,7 @@ namespace VaDAlpha
             {
                 string videoPath = e.Node.Tag.ToString();
                 axWindowsMediaPlayer1.URL = videoPath;
+                Console.WriteLine(videoPath);
             }
         }
 
@@ -258,5 +259,6 @@ namespace VaDAlpha
                 }
             }
         }
+        //h264 format .mp4
     }
 }

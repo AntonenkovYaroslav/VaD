@@ -5,6 +5,8 @@ VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VaDAlpha", "VaDAlpha\VaDAlpha.csproj", "{D996C0CC-F5C2-4A23-85D3-0476E285918A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testaccess", "..\testaccess\testaccess\testaccess.csproj", "{659B615B-4B6C-48C6-94FF-7FD860955ABB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D996C0CC-F5C2-4A23-85D3-0476E285918A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D996C0CC-F5C2-4A23-85D3-0476E285918A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D996C0CC-F5C2-4A23-85D3-0476E285918A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{659B615B-4B6C-48C6-94FF-7FD860955ABB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{659B615B-4B6C-48C6-94FF-7FD860955ABB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{659B615B-4B6C-48C6-94FF-7FD860955ABB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{659B615B-4B6C-48C6-94FF-7FD860955ABB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
