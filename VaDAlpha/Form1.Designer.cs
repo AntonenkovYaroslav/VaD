@@ -41,6 +41,8 @@
             this.buttonTxtLoadPath = new System.Windows.Forms.Button();
             this.buttonTxtSelectPath = new System.Windows.Forms.Button();
             this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
+            this.buttonSendVideo = new System.Windows.Forms.Button();
+            this.buttonSendText = new System.Windows.Forms.Button();
             this.panelVid.SuspendLayout();
             this.panelTxt.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
@@ -151,11 +153,32 @@
             this.axWindowsMediaPlayer1.Size = new System.Drawing.Size(572, 321);
             this.axWindowsMediaPlayer1.TabIndex = 2;
             // 
+            // buttonSendVideo
+            // 
+            this.buttonSendVideo.Location = new System.Drawing.Point(462, 635);
+            this.buttonSendVideo.Name = "buttonSendVideo";
+            this.buttonSendVideo.Size = new System.Drawing.Size(122, 23);
+            this.buttonSendVideo.TabIndex = 10;
+            this.buttonSendVideo.Text = "Оправить на сервер";
+            this.buttonSendVideo.UseVisualStyleBackColor = true;
+            this.buttonSendVideo.Click += new System.EventHandler(this.buttonSendVideo_Click);
+            // 
+            // buttonSendText
+            // 
+            this.buttonSendText.Location = new System.Drawing.Point(1065, 635);
+            this.buttonSendText.Name = "buttonSendText";
+            this.buttonSendText.Size = new System.Drawing.Size(103, 23);
+            this.buttonSendText.TabIndex = 11;
+            this.buttonSendText.Text = "Отправить в бд";
+            this.buttonSendText.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1180, 670);
+            this.Controls.Add(this.buttonSendText);
+            this.Controls.Add(this.buttonSendVideo);
             this.Controls.Add(this.buttonTxtLoadPath);
             this.Controls.Add(this.buttonTxtSelectPath);
             this.Controls.Add(this.buttonVidLoadPath);
@@ -191,6 +214,8 @@
         private System.Windows.Forms.Button buttonVidLoadPath;
         private System.Windows.Forms.Button buttonTxtLoadPath;
         private System.Windows.Forms.Button buttonTxtSelectPath;
+        private System.Windows.Forms.Button buttonSendVideo;
+        private System.Windows.Forms.Button buttonSendText;
     }
 }
 

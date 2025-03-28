@@ -1,0 +1,69 @@
+private void buttonTxtLoadPath_Click(object sender, EventArgs e)
+        {
+            treeViewTxt.Nodes.Clear(); // Очистка TreeView перед загрузкой новых данных  
+            string selectedPath = textBoxTxt.Text;
+
+            if (Directory.Exists(selectedPath))
+            {
+                // Создаем корневой узел для выбранной папки  
+                var rootNode = new TreeNode(Path.GetFileName(selectedPath)) { Tag = selectedPath };
+                treeViewTxt.Nodes.Add(rootNode);
+
+                // Проверяем наличие текстовых файлов в корневой директории  
+                var rootFiles = Directory.GetFiles(selectedPath, "*.*")
+                                         .Where(f => f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase) ||
+                                                     f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase) ||
+                                                     f.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)).ToList();
+
+                // Добавляем файлы, если они найдены  
+                foreach (var file in rootFiles)
+                {
+                    rootNode.Nodes.Add(new TreeNode(Path.GetFileName(file)) { Tag = file });
+                }
+
+                // Получаем все папки в выбранной директории  
+                var folders = Directory.GetDirectories(selectedPath);
+
+                // Перебираем каждую папку  
+                foreach (var folder in folders)
+                {
+                    // Создаем узел для папки  
+                    var folderNode = new TreeNode(Path.GetFileName(folder)) { Tag = folder };
+                    rootNode.Nodes.Add(folderNode); // Добавляем как дочерний узел к корневому узлу  
+
+                    // Получаем файлы только в текущей папке  
+                    var files = Directory.GetFiles(folder, "*.*")
+                                         .Where(f => f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase) ||
+                                                     f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase) ||
+                                                     f.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)).ToList();
+
+                    // Отладочный вывод  
+                    Console.WriteLine($"Найдено {files.Count} текстовых файлов в папке {folder}:");
+                    foreach (var file in files)
+                    {
+                        Console.WriteLine(file);
+                        folderNode.Nodes.Add(new TreeNode(Path.GetFileName(file)) { Tag = file });
+                    }
+
+                    // Ищем также вложенные папки и добавляем их  
+                    var subFolders = Directory.GetDirectories(folder);
+                    foreach (var subFolder in subFolders)
+                    {
+                        var subFolderNode = new TreeNode(Path.GetFileName(subFolder)) { Tag = subFolder };
+                        folderNode.Nodes.Add(subFolderNode);
+
+                        // Получаем файлы в подкаталогах  
+                        var subFiles = Directory.GetFiles(subFolder, "*.*")
+                                                .Where(f => f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase) ||
+                                                            f.EndsWith(".doc", StringComparison.OrdinalIgnoreCase) ||
+                                                            f.EndsWith(".rtf", StringComparison.OrdinalIgnoreCase)).ToList();
+
+                        // Отладочный вывод для подкаталогов  
+                        Console.WriteLine($"Найдено {subFiles.Count} текстовых файлов в подкаталоге {subFolder}:");
+                        foreach (var subFile in subFiles)
+                        {
+                            Console.WriteLine(subFile);
+                            subFolderNode.Nodes.Add(new TreeNode(Path.GetFileName(subFile)) { Tag = subFile });
+                        }
+                    }
+                }

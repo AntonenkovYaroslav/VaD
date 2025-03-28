@@ -136,6 +136,9 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
+    <Reference Include="WinSCPnet, Version=1.15.0.15073, Culture=neutral, PublicKeyToken=2271ec4a3c56d0bf, processorArchitecture=MSIL">
+      <HintPath>..\packages\WinSCP.6.3.6\lib\net40\WinSCPnet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Form1.cs">
@@ -159,6 +162,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include=".editorconfig" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -199,5 +203,7 @@
       <ErrorText>Данный проект ссылается на пакеты NuGet, отсутствующие на этом компьютере. Используйте восстановление пакетов NuGet, чтобы скачать их.  Дополнительную информацию см. по адресу: http://go.microsoft.com/fwlink/?LinkID=322105. Отсутствует следующий файл: {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\HarfBuzzSharp.2.6.1.5\build\net462\HarfBuzzSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\HarfBuzzSharp.2.6.1.5\build\net462\HarfBuzzSharp.targets'))" />
+    <Error Condition="!Exists('..\packages\WinSCP.6.3.6\build\WinSCP.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinSCP.6.3.6\build\WinSCP.targets'))" />
   </Target>
+  <Import Project="..\packages\WinSCP.6.3.6\build\WinSCP.targets" Condition="Exists('..\packages\WinSCP.6.3.6\build\WinSCP.targets')" />
 </Project>

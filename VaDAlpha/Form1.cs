@@ -2,12 +2,16 @@
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using System.Net.Http;
 using System.Xml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Spire.Doc;
 using Syncfusion.DocIO;
 using Syncfusion.DocIO.DLS;
+using FFmpeg.Native;
+using WinSCP;
+using System.Diagnostics;
 
 
 
@@ -38,41 +42,114 @@ namespace VaDAlpha
 
         private void buttonVidLoadPath_Click(object sender, EventArgs e)
         {
+            // Инициализация  
             treeViewVid.Nodes.Clear();
             string selectedPath = textBoxVid.Text;
+            int totalFolders = 0;
+            int totalVideos = 0;
+            var stopwatch = Stopwatch.StartNew();
 
-            if (Directory.Exists(selectedPath))
+            Debug.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Начало обработки видеофайлов");
+            Debug.WriteLine($"Выбранный путь: {selectedPath}");
+
+            try
             {
-                // Получаем все папки в выбранной директории  
-                var folders = Directory.GetDirectories(selectedPath);
-
-                // Перебираем каждую папку  
-                foreach (var folder in folders)
+                if (!Directory.Exists(selectedPath))
                 {
-                    // Создаем узел для папки  
-                    var folderNode = new TreeNode(Path.GetFileName(folder)) { Tag = folder };
-                    treeViewVid.Nodes.Add(folderNode);
-
-                    // Получаем видеофайлы в текущей папке  
-                    var files = Directory.GetFiles(folder, "*.*")
-                                         ;
-
-                    // Добавляем файлы как дочерние узлы  
-                    foreach (var file in files)
-                    {
-                        folderNode.Nodes.Add(new TreeNode(Path.GetFileName(file)) { Tag = file });
-                    }
+                    Debug.WriteLine("Ошибка: директория не существует");
+                    MessageBox.Show("Выбранная папка не существует.", "Ошибка",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
 
-                // Проверяем наличие видеофайлов в выбранной директории  
-                if (!treeViewVid.Nodes.Cast<TreeNode>().Any(n => n.Nodes.Count > 0))
+                // Создание корневого узла  
+                var rootNode = new TreeNode(Path.GetFileName(selectedPath))
                 {
-                    MessageBox.Show("Нет доступных видеофайлов в выбранной директории.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Tag = selectedPath,
+                    ImageKey = "folder",
+                    SelectedImageKey = "folder"
+                };
+                treeViewVid.Nodes.Add(rootNode);
+                Debug.WriteLine($"Создан корневой узел: {rootNode.Text}");
+
+                // Обработка файлов в корневой папке  
+                var videoExtensions = new[] { ".mp4", ".avi", ".mkv", ".mov", ".wmv",
+                                    ".mpg", ".mpeg", ".flv", ".m4v", ".webm", ".mxf" };
+
+                ProcessDirectory(rootNode, selectedPath, videoExtensions, ref totalFolders, ref totalVideos);
+
+                // Проверка результатов  
+                Debug.WriteLine($"Обработка завершена. Папок: {totalFolders}, Видеофайлов: {totalVideos}");
+
+                if (totalVideos == 0)
+                {
+                    Debug.WriteLine("Предупреждение: видеофайлы не найдены");
+                    MessageBox.Show("Нет доступных видеофайлов в выбранной директории.",
+                                  "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Выбранная папка не существует.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Debug.WriteLine($"Критическая ошибка: {ex}");
+                MessageBox.Show($"Произошла ошибка: {ex.Message}", "Ошибка",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                stopwatch.Stop();
+                Debug.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Обработка завершена за {stopwatch.Elapsed.TotalSeconds:0.000} сек");
+            }
+        }
+
+        // Рекурсивный метод обработки директорий  
+        private void ProcessDirectory(TreeNode parentNode, string path,
+                                    string[] extensions, ref int folderCount, ref int fileCount)
+        {
+            try
+            {
+                // Обработка файлов  
+                var files = Directory.EnumerateFiles(path, "*.*")
+                                    .Where(f => extensions.Contains(Path.GetExtension(f).ToLower()))
+                                    .ToList();
+
+                foreach (var file in files)
+                {
+                    var fileNode = new TreeNode(Path.GetFileName(file))
+                    {
+                        Tag = file,
+                        Name = "videoFile",
+                        ImageKey = "video",
+                        SelectedImageKey = "video"
+                    };
+                    parentNode.Nodes.Add(fileNode);
+                    fileCount++;
+
+                    Debug.WriteLine($"Добавлен файл: {file}");
+                }
+
+                // Обработка подпапок  
+                foreach (var directory in Directory.EnumerateDirectories(path))
+                {
+                    var dirNode = new TreeNode(Path.GetFileName(directory))
+                    {
+                        Tag = directory,
+                        ImageKey = "folder",
+                        SelectedImageKey = "folder"
+                    };
+                    parentNode.Nodes.Add(dirNode);
+                    folderCount++;
+
+                    Debug.WriteLine($"Обработка папки: {directory}");
+                    ProcessDirectory(dirNode, directory, extensions, ref folderCount, ref fileCount);
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Debug.WriteLine($"Нет доступа к {path}: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка при обработке {path}: {ex.Message}");
             }
         }
 
@@ -259,6 +336,93 @@ namespace VaDAlpha
                 }
             }
         }
+
+
         //h264 format .mp4
+        private void CompressVideo(string inputPath, string outputPath)
+        {
+            string ffmpegPath = @"ffmpeg.exe"; // Укажите правильный путь к ffmpeg.exe
+            string arguments = $"-i \"{inputPath}\" -vcodec libx264 -crf 23 \"{outputPath}\"";
+
+            using (var process = new System.Diagnostics.Process())
+            {
+                process.StartInfo.FileName = ffmpegPath;
+                process.StartInfo.Arguments = arguments;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.CreateNoWindow = true;
+
+                process.Start();
+                process.WaitForExit();
+
+                // Отладочный вывод
+                string output = process.StandardOutput.ReadToEnd();
+                string error = process.StandardError.ReadToEnd();
+                MessageBox.Show($"FFmpeg Output: {output}\nFFmpeg Error: {error}", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            
+            }
+        }
+        private void SendFileToServer(string localFilePath, string remoteFilePath)
+        {
+            using (var session = new WinSCP.Session())
+            {
+                // Создаем сессию и задаем параметры
+                var sessionOptions = new WinSCP.SessionOptions
+                {
+                    Protocol = WinSCP.Protocol.Sftp,
+                    HostName = "10.15.8.220",
+                    UserName = "metalhead",
+                    Password = "metalhead",
+                    // SshPrivateKeyPath = @"C:\path\to\your\privatekey.ppk", // Задайте путь к вашему приватному ключу, если требуется
+                    SshHostKeyFingerprint = "ssh-ed25519 255 g/0NbJfRCRNfD6zR0UcHnBEShZZvTQ1cNUxbTrdTdY4"
+                };
+
+                try
+                {
+                    session.Open(sessionOptions);
+                    // Переносим файл
+                    TransferOptions transferOptions = new TransferOptions
+                    {
+                        TransferMode = TransferMode.Binary
+                    };
+                    TransferOperationResult transferResult;
+                    transferResult = session.PutFiles(localFilePath, remoteFilePath, false, transferOptions);
+                    // Проверка на ошибки
+                    transferResult.Check();
+                    MessageBox.Show("Файл успешно передан!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information); //Сообщение об успехе
+                }
+                catch (WinSCP.SessionException ex)
+                {
+                    //Обработка исключения WinSCP. Важно!
+                    MessageBox.Show($"Ошибка WinSCP: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                catch (Exception ex)
+                {
+                    //Обработка других исключений.
+                    MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void buttonSendVideo_Click(object sender, EventArgs e)
+        {
+            var selectedNode = treeViewVid.SelectedNode;
+            if (selectedNode != null && selectedNode.Tag is string videoPath)
+            {
+                MessageBox.Show($"Выбранный файл: {videoPath}", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information); // Отладочное сообщение
+                string compressedVideoPath = Path.Combine(Path.GetDirectoryName(videoPath), "compressed_" + Path.GetFileName(videoPath));
+
+                // Сжимаем видео
+                CompressVideo(videoPath, compressedVideoPath);
+
+                // Передаем сжатый файл на сервер
+                SendFileToServer(compressedVideoPath, "/home/metalhead/video_compressed"); // Замените на ваш путь на сервере
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите видеофайл для отправки.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }
