@@ -54,9 +54,6 @@
     <Reference Include="FFmpeg.Native, Version=4.4.0.2627, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FFmpeg.Native.H264.4.4.0.2627\lib\netstandard2.0\FFmpeg.Native.dll</HintPath>
     </Reference>
-    <Reference Include="HarfBuzzSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\HarfBuzzSharp.2.6.1.5\lib\net462\HarfBuzzSharp.dll</HintPath>
-    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=1.4.2.13, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.1.4.2\lib\netstandard2.0\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
